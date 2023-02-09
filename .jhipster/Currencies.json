@@ -1,0 +1,24 @@
+{
+  "applications": "*",
+  "changelogDate": "20230208160230",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "currencies",
+  "fields": [
+    {
+      "fieldName": "currencyName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "currencyCode",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Currencies",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "service": "no"
+}

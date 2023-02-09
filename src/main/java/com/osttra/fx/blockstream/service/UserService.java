@@ -2,13 +2,16 @@ package com.osttra.fx.blockstream.service;
 
 import com.osttra.fx.blockstream.config.Constants;
 import com.osttra.fx.blockstream.domain.Authority;
+import com.osttra.fx.blockstream.domain.Customer;
 import com.osttra.fx.blockstream.domain.User;
 import com.osttra.fx.blockstream.repository.AuthorityRepository;
+import com.osttra.fx.blockstream.repository.CustomerRepository;
 import com.osttra.fx.blockstream.repository.UserRepository;
 import com.osttra.fx.blockstream.security.AuthoritiesConstants;
 import com.osttra.fx.blockstream.security.SecurityUtils;
 import com.osttra.fx.blockstream.service.dto.AdminUserDTO;
 import com.osttra.fx.blockstream.service.dto.UserDTO;
+import com.osttra.fx.blockstream.web.rest.vm.ManagedUserVM;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -32,14 +35,22 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final CustomerRepository customerRepository;
+
     private final PasswordEncoder passwordEncoder;
 
     private final AuthorityRepository authorityRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthorityRepository authorityRepository) {
+    public UserService(
+        CustomerRepository customerRepository,
+        UserRepository userRepository,
+        PasswordEncoder passwordEncoder,
+        AuthorityRepository authorityRepository
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
+        this.customerRepository = customerRepository;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -119,6 +130,7 @@ public class UserService {
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
         userRepository.save(newUser);
+
         log.debug("Created Information for User: {}", newUser);
         return newUser;
     }
@@ -131,7 +143,7 @@ public class UserService {
         return true;
     }
 
-    public User createUser(AdminUserDTO userDTO) {
+    public User createUser(ManagedUserVM userDTO) {
         User user = new User();
         user.setLogin(userDTO.getLogin().toLowerCase());
         user.setFirstName(userDTO.getFirstName());
@@ -145,8 +157,8 @@ public class UserService {
         } else {
             user.setLangKey(userDTO.getLangKey());
         }
-        String encryptedPassword = passwordEncoder.encode(RandomUtil.generatePassword());
-        user.setPassword(encryptedPassword);
+        String password = passwordEncoder.encode(userDTO.getLogin().toLowerCase());
+        user.setPassword(password);
         user.setResetKey(RandomUtil.generateResetKey());
         user.setResetDate(Instant.now());
         user.setActivated(true);
@@ -161,6 +173,12 @@ public class UserService {
             user.setAuthorities(authorities);
         }
         userRepository.save(user);
+        Customer customer = new Customer();
+        customer.setCustomerName(userDTO.getFirstName());
+        customer.setCustomerHashCode(userDTO.getCustomerHashCode());
+        customer.setCustomerLegalEntity(userDTO.getLogin().toLowerCase());
+        customer.setUserId(user);
+        customerRepository.save(customer);
         log.debug("Created Information for User: {}", user);
         return user;
     }

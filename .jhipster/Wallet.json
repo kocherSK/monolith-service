@@ -1,0 +1,32 @@
+{
+  "applications": "*",
+  "changelogDate": "20230208160231",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "wallet",
+  "fields": [
+    {
+      "fieldName": "currencyCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "amount",
+      "fieldType": "BigDecimal"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Wallet",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "customerHashCode",
+      "otherEntityName": "customer",
+      "ownerSide": true,
+      "relationshipName": "customer",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "service": "no"
+}

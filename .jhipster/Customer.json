@@ -1,0 +1,40 @@
+{
+  "applications": "*",
+  "changelogDate": "20230208160229",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "customer",
+  "fields": [
+    {
+      "fieldName": "customerName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "customerLegalEntity",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "customerPassword",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "customerHashCode",
+      "fieldType": "String"
+    }
+  ],
+  "fluentMethods": true,
+  "jpaMetamodelFiltering": false,
+  "name": "Customer",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "id",
+      "otherEntityName": "user",
+      "ownerSide": true,
+      "relationshipName": "userId",
+      "relationshipType": "one-to-one"
+    }
+  ],
+  "service": "no"
+}
