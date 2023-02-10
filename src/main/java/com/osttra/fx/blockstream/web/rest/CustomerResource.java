@@ -12,6 +12,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -176,7 +177,13 @@ public class CustomerResource {
 
         final Page<AdminUserDTO> page = userService.getAllManagedUsers(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+        Optional<User> currentUser = userService.getUserWithAuthorities();
+        List<AdminUserDTO> filtered = page
+            .getContent()
+            .stream()
+            .filter(user -> !user.getLogin().equals(currentUser.get().getLogin()))
+            .collect(Collectors.toList());
+        return new ResponseEntity<>(filtered, headers, HttpStatus.OK);
     }
 
     private boolean onlyContainsAllowedProperties(Pageable pageable) {

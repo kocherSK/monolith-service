@@ -60,100 +60,22 @@ public class WalletResource {
         if (wallet.getId() != null) {
             throw new BadRequestAlertException("A new wallet cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        //@TODO  - Subhash
-        //
+
         Optional<User> currentUser = userService.getUserWithAuthorities();
         String loggedInUser = currentUser.get().getLogin();
-        List<Customer> customers = customerRepository
+        Customer customers = customerRepository
             .findAll()
             .stream()
             .filter(cust -> cust.getCustomerLegalEntity().equals(loggedInUser))
-            .collect(Collectors.toList());
-        if (!customers.isEmpty()) {
-            wallet.setCustomer(customers.get(0));
-        }
+            .findFirst()
+            .get();
+        wallet.setCustomer(customers);
+
         Wallet result = walletRepository.save(wallet);
         return ResponseEntity
             .created(new URI("/api/wallets/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId()))
             .body(result);
-    }
-
-    /**
-     * {@code PUT  /wallets/:id} : Updates an existing wallet.
-     *
-     * @param id the id of the wallet to save.
-     * @param wallet the wallet to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated wallet,
-     * or with status {@code 400 (Bad Request)} if the wallet is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the wallet couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PutMapping("/wallets/{id}")
-    public ResponseEntity<Wallet> updateWallet(@PathVariable(value = "id", required = false) final String id, @RequestBody Wallet wallet)
-        throws URISyntaxException {
-        log.debug("REST request to update Wallet : {}, {}", id, wallet);
-        if (wallet.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, wallet.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!walletRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Wallet result = walletRepository.save(wallet);
-        return ResponseEntity
-            .ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, wallet.getId()))
-            .body(result);
-    }
-
-    /**
-     * {@code PATCH  /wallets/:id} : Partial updates given fields of an existing wallet, field will ignore if it is null
-     *
-     * @param id the id of the wallet to save.
-     * @param wallet the wallet to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated wallet,
-     * or with status {@code 400 (Bad Request)} if the wallet is not valid,
-     * or with status {@code 404 (Not Found)} if the wallet is not found,
-     * or with status {@code 500 (Internal Server Error)} if the wallet couldn't be updated.
-     * @throws URISyntaxException if the Location URI syntax is incorrect.
-     */
-    @PatchMapping(value = "/wallets/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<Wallet> partialUpdateWallet(
-        @PathVariable(value = "id", required = false) final String id,
-        @RequestBody Wallet wallet
-    ) throws URISyntaxException {
-        log.debug("REST request to partial update Wallet partially : {}, {}", id, wallet);
-        if (wallet.getId() == null) {
-            throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
-        }
-        if (!Objects.equals(id, wallet.getId())) {
-            throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
-        }
-
-        if (!walletRepository.existsById(id)) {
-            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
-        }
-
-        Optional<Wallet> result = walletRepository
-            .findById(wallet.getId())
-            .map(existingWallet -> {
-                if (wallet.getCurrencyCode() != null) {
-                    existingWallet.setCurrencyCode(wallet.getCurrencyCode());
-                }
-                if (wallet.getAmount() != null) {
-                    existingWallet.setAmount(wallet.getAmount());
-                }
-
-                return existingWallet;
-            })
-            .map(walletRepository::save);
-
-        return ResponseUtil.wrapOrNotFound(result, HeaderUtil.createEntityUpdateAlert(applicationName, false, ENTITY_NAME, wallet.getId()));
     }
 
     /**
