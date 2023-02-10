@@ -91,11 +91,15 @@ public class WalletResource {
             return walletRepository.findAllWithEagerRelationships();
         } else {
             Optional<User> currentUser = userService.getUserWithAuthorities();
-            return walletRepository
-                .findAll()
-                .stream()
-                .filter(w -> w.getCustomer().getCustomerLegalEntity().equals(currentUser.get().getLogin()))
-                .collect(Collectors.toList());
+            List<Wallet> wallets = walletRepository.findAll();
+            if (!wallets.isEmpty()) {
+                wallets =
+                    wallets
+                        .stream()
+                        .filter(w -> w.getCustomer().getCustomerLegalEntity().equals(currentUser.get().getLogin()))
+                        .collect(Collectors.toList());
+            }
+            return wallets;
         }
     }
 
