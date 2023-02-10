@@ -69,6 +69,15 @@ class SmartTradeResourceIT {
     private static final String DEFAULT_DIRECTION = "AAAAAAAAAA";
     private static final String UPDATED_DIRECTION = "BBBBBBBBBB";
 
+    private static final LocalDate DEFAULT_TRADE_DATE = LocalDate.ofEpochDay(0L);
+    private static final LocalDate UPDATED_TRADE_DATE = LocalDate.now(ZoneId.systemDefault());
+
+    private static final String DEFAULT_STATUS = "AAAAAAAAAA";
+    private static final String UPDATED_STATUS = "BBBBBBBBBB";
+
+    private static final String DEFAULT_FAILURE_REASON = "AAAAAAAAAA";
+    private static final String UPDATED_FAILURE_REASON = "BBBBBBBBBB";
+
     private static final String ENTITY_API_URL = "/api/smart-trades";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
 
@@ -100,7 +109,10 @@ class SmartTradeResourceIT {
             .contraAmount(DEFAULT_CONTRA_AMOUNT)
             .valueDate(DEFAULT_VALUE_DATE)
             .transactionId(DEFAULT_TRANSACTION_ID)
-            .direction(DEFAULT_DIRECTION);
+            .direction(DEFAULT_DIRECTION)
+            .tradeDate(DEFAULT_TRADE_DATE)
+            .status(DEFAULT_STATUS)
+            .failureReason(DEFAULT_FAILURE_REASON);
         return smartTrade;
     }
 
@@ -121,7 +133,10 @@ class SmartTradeResourceIT {
             .contraAmount(UPDATED_CONTRA_AMOUNT)
             .valueDate(UPDATED_VALUE_DATE)
             .transactionId(UPDATED_TRANSACTION_ID)
-            .direction(UPDATED_DIRECTION);
+            .direction(UPDATED_DIRECTION)
+            .tradeDate(UPDATED_TRADE_DATE)
+            .status(UPDATED_STATUS)
+            .failureReason(UPDATED_FAILURE_REASON);
         return smartTrade;
     }
 
@@ -153,6 +168,9 @@ class SmartTradeResourceIT {
         assertThat(testSmartTrade.getValueDate()).isEqualTo(DEFAULT_VALUE_DATE);
         assertThat(testSmartTrade.getTransactionId()).isEqualTo(DEFAULT_TRANSACTION_ID);
         assertThat(testSmartTrade.getDirection()).isEqualTo(DEFAULT_DIRECTION);
+        assertThat(testSmartTrade.getTradeDate()).isEqualTo(DEFAULT_TRADE_DATE);
+        assertThat(testSmartTrade.getStatus()).isEqualTo(DEFAULT_STATUS);
+        assertThat(testSmartTrade.getFailureReason()).isEqualTo(DEFAULT_FAILURE_REASON);
     }
 
     @Test
@@ -192,7 +210,10 @@ class SmartTradeResourceIT {
             .andExpect(jsonPath("$.[*].contraAmount").value(hasItem(sameNumber(DEFAULT_CONTRA_AMOUNT))))
             .andExpect(jsonPath("$.[*].valueDate").value(hasItem(DEFAULT_VALUE_DATE.toString())))
             .andExpect(jsonPath("$.[*].transactionId").value(hasItem(DEFAULT_TRANSACTION_ID)))
-            .andExpect(jsonPath("$.[*].direction").value(hasItem(DEFAULT_DIRECTION)));
+            .andExpect(jsonPath("$.[*].direction").value(hasItem(DEFAULT_DIRECTION)))
+            .andExpect(jsonPath("$.[*].tradeDate").value(hasItem(DEFAULT_TRADE_DATE.toString())))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)))
+            .andExpect(jsonPath("$.[*].failureReason").value(hasItem(DEFAULT_FAILURE_REASON)));
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -232,7 +253,10 @@ class SmartTradeResourceIT {
             .andExpect(jsonPath("$.contraAmount").value(sameNumber(DEFAULT_CONTRA_AMOUNT)))
             .andExpect(jsonPath("$.valueDate").value(DEFAULT_VALUE_DATE.toString()))
             .andExpect(jsonPath("$.transactionId").value(DEFAULT_TRANSACTION_ID))
-            .andExpect(jsonPath("$.direction").value(DEFAULT_DIRECTION));
+            .andExpect(jsonPath("$.direction").value(DEFAULT_DIRECTION))
+            .andExpect(jsonPath("$.tradeDate").value(DEFAULT_TRADE_DATE.toString()))
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS))
+            .andExpect(jsonPath("$.failureReason").value(DEFAULT_FAILURE_REASON));
     }
 
     @Test
@@ -260,7 +284,10 @@ class SmartTradeResourceIT {
             .contraAmount(UPDATED_CONTRA_AMOUNT)
             .valueDate(UPDATED_VALUE_DATE)
             .transactionId(UPDATED_TRANSACTION_ID)
-            .direction(UPDATED_DIRECTION);
+            .direction(UPDATED_DIRECTION)
+            .tradeDate(UPDATED_TRADE_DATE)
+            .status(UPDATED_STATUS)
+            .failureReason(UPDATED_FAILURE_REASON);
 
         restSmartTradeMockMvc
             .perform(
@@ -284,6 +311,9 @@ class SmartTradeResourceIT {
         assertThat(testSmartTrade.getValueDate()).isEqualTo(UPDATED_VALUE_DATE);
         assertThat(testSmartTrade.getTransactionId()).isEqualTo(UPDATED_TRANSACTION_ID);
         assertThat(testSmartTrade.getDirection()).isEqualTo(UPDATED_DIRECTION);
+        assertThat(testSmartTrade.getTradeDate()).isEqualTo(UPDATED_TRADE_DATE);
+        assertThat(testSmartTrade.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testSmartTrade.getFailureReason()).isEqualTo(UPDATED_FAILURE_REASON);
     }
 
     @Test
@@ -350,7 +380,12 @@ class SmartTradeResourceIT {
         SmartTrade partialUpdatedSmartTrade = new SmartTrade();
         partialUpdatedSmartTrade.setId(smartTrade.getId());
 
-        partialUpdatedSmartTrade.currencySell(UPDATED_CURRENCY_SELL).rate(UPDATED_RATE).amount(UPDATED_AMOUNT).direction(UPDATED_DIRECTION);
+        partialUpdatedSmartTrade
+            .currencySell(UPDATED_CURRENCY_SELL)
+            .rate(UPDATED_RATE)
+            .amount(UPDATED_AMOUNT)
+            .direction(UPDATED_DIRECTION)
+            .failureReason(UPDATED_FAILURE_REASON);
 
         restSmartTradeMockMvc
             .perform(
@@ -374,6 +409,9 @@ class SmartTradeResourceIT {
         assertThat(testSmartTrade.getValueDate()).isEqualTo(DEFAULT_VALUE_DATE);
         assertThat(testSmartTrade.getTransactionId()).isEqualTo(DEFAULT_TRANSACTION_ID);
         assertThat(testSmartTrade.getDirection()).isEqualTo(UPDATED_DIRECTION);
+        assertThat(testSmartTrade.getTradeDate()).isEqualTo(DEFAULT_TRADE_DATE);
+        assertThat(testSmartTrade.getStatus()).isEqualTo(DEFAULT_STATUS);
+        assertThat(testSmartTrade.getFailureReason()).isEqualTo(UPDATED_FAILURE_REASON);
     }
 
     @Test
@@ -397,7 +435,10 @@ class SmartTradeResourceIT {
             .contraAmount(UPDATED_CONTRA_AMOUNT)
             .valueDate(UPDATED_VALUE_DATE)
             .transactionId(UPDATED_TRANSACTION_ID)
-            .direction(UPDATED_DIRECTION);
+            .direction(UPDATED_DIRECTION)
+            .tradeDate(UPDATED_TRADE_DATE)
+            .status(UPDATED_STATUS)
+            .failureReason(UPDATED_FAILURE_REASON);
 
         restSmartTradeMockMvc
             .perform(
@@ -421,6 +462,9 @@ class SmartTradeResourceIT {
         assertThat(testSmartTrade.getValueDate()).isEqualTo(UPDATED_VALUE_DATE);
         assertThat(testSmartTrade.getTransactionId()).isEqualTo(UPDATED_TRANSACTION_ID);
         assertThat(testSmartTrade.getDirection()).isEqualTo(UPDATED_DIRECTION);
+        assertThat(testSmartTrade.getTradeDate()).isEqualTo(UPDATED_TRADE_DATE);
+        assertThat(testSmartTrade.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testSmartTrade.getFailureReason()).isEqualTo(UPDATED_FAILURE_REASON);
     }
 
     @Test

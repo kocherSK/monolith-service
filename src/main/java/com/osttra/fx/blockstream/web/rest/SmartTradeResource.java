@@ -151,6 +151,15 @@ public class SmartTradeResource {
                 if (smartTrade.getDirection() != null) {
                     existingSmartTrade.setDirection(smartTrade.getDirection());
                 }
+                if (smartTrade.getTradeDate() != null) {
+                    existingSmartTrade.setTradeDate(smartTrade.getTradeDate());
+                }
+                if (smartTrade.getStatus() != null) {
+                    existingSmartTrade.setStatus(smartTrade.getStatus());
+                }
+                if (smartTrade.getFailureReason() != null) {
+                    existingSmartTrade.setFailureReason(smartTrade.getFailureReason());
+                }
 
                 return existingSmartTrade;
             })

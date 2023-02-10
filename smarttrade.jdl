@@ -1,0 +1,26 @@
+entity Customer {
+   customerName String	
+   customerLegalEntity String
+   customerPassword String
+   customerHashCode String
+}
+
+entity SmartTrade {
+   counterParty String
+   tradingParty String
+   currencyBuy String
+   currencySell String
+   rate Double
+   amount BigDecimal
+   contraAmount BigDecimal
+   valueDate LocalDate
+   transactionId String
+   direction String
+   tradeDate LocalDate
+   status String
+   failureReason String
+}
+
+relationship ManyToOne {
+  SmartTrade{customer(customerHashCode)} to Customer
+}

@@ -1,6 +1,5 @@
 package com.osttra.fx.blockstream.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -51,9 +50,17 @@ public class SmartTrade implements Serializable {
     @Field("direction")
     private String direction;
 
+    @Field("trade_date")
+    private LocalDate tradeDate;
+
+    @Field("status")
+    private String status;
+
+    @Field("failure_reason")
+    private String failureReason;
+
     @DBRef
     @Field("customer")
-    @JsonIgnoreProperties(value = { "userId" }, allowSetters = true)
     private Customer customer;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
@@ -201,6 +208,45 @@ public class SmartTrade implements Serializable {
         this.direction = direction;
     }
 
+    public LocalDate getTradeDate() {
+        return this.tradeDate;
+    }
+
+    public SmartTrade tradeDate(LocalDate tradeDate) {
+        this.setTradeDate(tradeDate);
+        return this;
+    }
+
+    public void setTradeDate(LocalDate tradeDate) {
+        this.tradeDate = tradeDate;
+    }
+
+    public String getStatus() {
+        return this.status;
+    }
+
+    public SmartTrade status(String status) {
+        this.setStatus(status);
+        return this;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getFailureReason() {
+        return this.failureReason;
+    }
+
+    public SmartTrade failureReason(String failureReason) {
+        this.setFailureReason(failureReason);
+        return this;
+    }
+
+    public void setFailureReason(String failureReason) {
+        this.failureReason = failureReason;
+    }
+
     public Customer getCustomer() {
         return this.customer;
     }
@@ -248,6 +294,9 @@ public class SmartTrade implements Serializable {
             ", valueDate='" + getValueDate() + "'" +
             ", transactionId='" + getTransactionId() + "'" +
             ", direction='" + getDirection() + "'" +
+            ", tradeDate='" + getTradeDate() + "'" +
+            ", status='" + getStatus() + "'" +
+            ", failureReason='" + getFailureReason() + "'" +
             "}";
     }
 }
