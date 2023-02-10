@@ -63,14 +63,14 @@ public class WalletResource {
 
         Optional<User> currentUser = userService.getUserWithAuthorities();
         String loggedInUser = currentUser.get().getLogin();
-        Customer customers = customerRepository
+        List<Customer> customers = customerRepository
             .findAll()
             .stream()
             .filter(cust -> cust.getCustomerLegalEntity().equals(loggedInUser))
-            .findFirst()
-            .get();
-        wallet.setCustomer(customers);
-
+            .collect(Collectors.toList());
+        if (!customers.isEmpty()) {
+            wallet.setCustomer(customers.get(0));
+        }
         Wallet result = walletRepository.save(wallet);
         return ResponseEntity
             .created(new URI("/api/wallets/" + result.getId()))
