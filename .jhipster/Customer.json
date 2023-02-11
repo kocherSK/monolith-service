@@ -3,7 +3,7 @@
   "changelogDate": "20230208160229",
   "dto": "no",
   "embedded": false,
-  "entityTableName": "customer",
+  "entityTableName": "",
   "fields": [
     {
       "fieldName": "customerName",

@@ -1,13 +1,18 @@
 package com.osttra.fx.blockstream.web.rest;
 
+import com.osttra.fx.blockstream.domain.Customer;
 import com.osttra.fx.blockstream.domain.SmartTrade;
+import com.osttra.fx.blockstream.domain.User;
+import com.osttra.fx.blockstream.repository.CustomerRepository;
 import com.osttra.fx.blockstream.repository.SmartTradeRepository;
+import com.osttra.fx.blockstream.service.UserService;
 import com.osttra.fx.blockstream.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,8 +37,13 @@ public class SmartTradeResource {
 
     private final SmartTradeRepository smartTradeRepository;
 
-    public SmartTradeResource(SmartTradeRepository smartTradeRepository) {
+    private final CustomerResource customerResource;
+    private final UserService userService;
+
+    public SmartTradeResource(SmartTradeRepository smartTradeRepository, UserService userService, CustomerResource customerResource) {
         this.smartTradeRepository = smartTradeRepository;
+        this.userService = userService;
+        this.customerResource = customerResource;
     }
 
     /**
@@ -49,7 +59,10 @@ public class SmartTradeResource {
         if (smartTrade.getId() != null) {
             throw new BadRequestAlertException("A new smartTrade cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
+        smartTrade.setCustomer(customerResource.getCurrentCustomer());
         SmartTrade result = smartTradeRepository.save(smartTrade);
+
         return ResponseEntity
             .created(new URI("/api/smart-trades/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId()))
@@ -180,11 +193,17 @@ public class SmartTradeResource {
     @GetMapping("/smart-trades")
     public List<SmartTrade> getAllSmartTrades(@RequestParam(required = false, defaultValue = "false") boolean eagerload) {
         log.debug("REST request to get all SmartTrades");
+        List<SmartTrade> trades;
         if (eagerload) {
-            return smartTradeRepository.findAllWithEagerRelationships();
+            trades = smartTradeRepository.findAllWithEagerRelationships();
         } else {
-            return smartTradeRepository.findAll();
+            trades = smartTradeRepository.findAll();
         }
+        String currentCustomerLegals = customerResource.getCurrentCustomer().getCustomerLegalEntity();
+        return trades
+            .stream()
+            .filter(trade -> trade.getTradingParty().equals(currentCustomerLegals) || trade.getCounterParty().equals(currentCustomerLegals))
+            .collect(Collectors.toList());
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.osttra.fx.blockstream.web.rest;
 
+import com.google.common.collect.Lists;
 import com.osttra.fx.blockstream.domain.Customer;
 import com.osttra.fx.blockstream.domain.User;
 import com.osttra.fx.blockstream.domain.Wallet;
@@ -7,9 +8,11 @@ import com.osttra.fx.blockstream.repository.CustomerRepository;
 import com.osttra.fx.blockstream.repository.WalletRepository;
 import com.osttra.fx.blockstream.service.UserService;
 import com.osttra.fx.blockstream.web.rest.errors.BadRequestAlertException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,12 +42,12 @@ public class WalletResource {
 
     private final UserService userService;
 
-    private final CustomerRepository customerRepository;
+    private final CustomerResource customerResource;
 
-    public WalletResource(WalletRepository walletRepository, UserService userService, CustomerRepository customerRepository) {
+    public WalletResource(WalletRepository walletRepository, UserService userService, CustomerResource customerResource) {
         this.walletRepository = walletRepository;
         this.userService = userService;
-        this.customerRepository = customerRepository;
+        this.customerResource = customerResource;
     }
 
     /**
@@ -55,27 +58,18 @@ public class WalletResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/wallets")
-    public ResponseEntity<Wallet> createWallet(@RequestBody Wallet wallet) throws URISyntaxException {
+    public ResponseEntity<List<Wallet>> createWallet(@RequestBody Wallet wallet) throws URISyntaxException {
         log.debug("REST request to save Wallet : {}", wallet);
         if (wallet.getId() != null) {
             throw new BadRequestAlertException("A new wallet cannot already have an ID", ENTITY_NAME, "idexists");
         }
-
-        Optional<User> currentUser = userService.getUserWithAuthorities();
-        String loggedInUser = currentUser.get().getLogin();
-        List<Customer> customers = customerRepository
-            .findAll()
-            .stream()
-            .filter(cust -> cust.getCustomerLegalEntity().equals(loggedInUser))
-            .collect(Collectors.toList());
-        if (!customers.isEmpty()) {
-            wallet.setCustomer(customers.get(0));
-        }
+        wallet.setCustomer(customerResource.getCurrentCustomer());
         Wallet result = walletRepository.save(wallet);
+
         return ResponseEntity
             .created(new URI("/api/wallets/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId()))
-            .body(result);
+            .body(getAllWallets(false));
     }
 
     /**
@@ -87,20 +81,33 @@ public class WalletResource {
     @GetMapping("/wallets")
     public List<Wallet> getAllWallets(@RequestParam(required = false, defaultValue = "false") boolean eagerload) {
         log.debug("REST request to get all Wallets");
+        List<Wallet> wallets = Lists.newArrayList();
         if (eagerload) {
-            return walletRepository.findAllWithEagerRelationships();
+            wallets = walletRepository.findAllWithEagerRelationships();
         } else {
-            Optional<User> currentUser = userService.getUserWithAuthorities();
-            List<Wallet> wallets = walletRepository.findAll();
-            if (!wallets.isEmpty()) {
-                wallets =
-                    wallets
-                        .stream()
-                        .filter(w -> w.getCustomer().getCustomerLegalEntity().equals(currentUser.get().getLogin()))
-                        .collect(Collectors.toList());
-            }
-            return wallets;
+            wallets = walletRepository.findAll();
         }
+
+        if (!wallets.isEmpty()) {
+            String currentCustomerLegals = customerResource.getCurrentCustomer().getCustomerLegalEntity();
+            Map<String, Integer> conWallets = wallets
+                .stream()
+                .filter(w -> w.getCustomer().getCustomerLegalEntity().equals(currentCustomerLegals))
+                .collect(
+                    Collectors.groupingBy(
+                        wallet -> wallet.getCurrencyCode(),
+                        Collectors.summingInt(wallet -> wallet.getAmount().intValue())
+                    )
+                );
+
+            wallets =
+                conWallets
+                    .entrySet()
+                    .stream()
+                    .map(wle -> new Wallet().currencyCode(wle.getKey()).amount(new BigDecimal(wle.getValue())))
+                    .collect(Collectors.toList());
+        }
+        return wallets;
     }
 
     /**

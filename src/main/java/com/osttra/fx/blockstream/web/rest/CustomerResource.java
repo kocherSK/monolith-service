@@ -219,4 +219,18 @@ public class CustomerResource {
         customerRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id)).build();
     }
+
+    public Customer getCurrentCustomer() {
+        Optional<User> currentUser = userService.getUserWithAuthorities();
+        String loggedInUser = currentUser.get().getLogin();
+        List<Customer> customers = customerRepository
+            .findAll()
+            .stream()
+            .filter(cust -> cust.getCustomerLegalEntity().equals(loggedInUser))
+            .collect(Collectors.toList());
+        if (!customers.isEmpty()) {
+            return customers.get(0);
+        }
+        return null;
+    }
 }
