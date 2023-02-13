@@ -57,19 +57,19 @@ public class WalletResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new wallet, or with status {@code 400 (Bad Request)} if the wallet has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
-    @PostMapping("/wallets")
-    public ResponseEntity<List<Wallet>> createWallet(@RequestBody Wallet wallet) throws URISyntaxException {
+    @PostMapping("/wallets/{loginId}")
+    public ResponseEntity<List<Wallet>> createWallet(@RequestBody Wallet wallet, @PathVariable String loginId) throws URISyntaxException {
         log.debug("REST request to save Wallet : {}", wallet);
         if (wallet.getId() != null) {
             throw new BadRequestAlertException("A new wallet cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        wallet.setCustomer(customerResource.getCurrentCustomer());
+//        wallet.setCustomer(customerResource.getCurrentCustomer());
         Wallet result = walletRepository.save(wallet);
 
         return ResponseEntity
             .created(new URI("/api/wallets/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId()))
-            .body(getAllWallets(false));
+            .body(getWallet(wallet.getCustomer().getCustomerLegalEntity()));
     }
 
     /**
