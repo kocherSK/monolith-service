@@ -90,22 +90,7 @@ public class WalletResource {
 
         if (!wallets.isEmpty()) {
             String currentCustomerLegals = customerResource.getCurrentCustomer().getCustomerLegalEntity();
-            Map<String, Integer> conWallets = wallets
-                .stream()
-                .filter(w -> w.getCustomer().getCustomerLegalEntity().equals(currentCustomerLegals))
-                .collect(
-                    Collectors.groupingBy(
-                        wallet -> wallet.getCurrencyCode(),
-                        Collectors.summingInt(wallet -> wallet.getAmount().intValue())
-                    )
-                );
-
-            wallets =
-                conWallets
-                    .entrySet()
-                    .stream()
-                    .map(wle -> new Wallet().currencyCode(wle.getKey()).amount(new BigDecimal(wle.getValue())))
-                    .collect(Collectors.toList());
+            wallets = getWallets(currentCustomerLegals, wallets);
         }
         return wallets;
     }
@@ -116,11 +101,31 @@ public class WalletResource {
      * @param id the id of the wallet to retrieve.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the wallet, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/wallets/{id}")
-    public ResponseEntity<Wallet> getWallet(@PathVariable String id) {
-        log.debug("REST request to get Wallet : {}", id);
-        Optional<Wallet> wallet = walletRepository.findOneWithEagerRelationships(id);
-        return ResponseUtil.wrapOrNotFound(wallet);
+    @GetMapping("/wallets/{loginId}")
+    public List<Wallet> getWallet(@PathVariable String loginId) {
+        log.debug("REST request to get Wallet : {}", loginId);
+        List<Wallet> wallets = walletRepository.findAll();
+        if (!wallets.isEmpty()) {
+            wallets = getWallets(loginId, wallets);
+        }
+        return wallets;
+    }
+
+    private List<Wallet> getWallets(String loginId, List<Wallet> wallets) {
+        Map<String, Integer> conWallets = wallets
+            .stream()
+            .filter(w -> w.getCustomer().getCustomerLegalEntity().equals(loginId))
+            .collect(
+                Collectors.groupingBy(wallet -> wallet.getCurrencyCode(), Collectors.summingInt(wallet -> wallet.getAmount().intValue()))
+            );
+
+        wallets =
+            conWallets
+                .entrySet()
+                .stream()
+                .map(wle -> new Wallet().currencyCode(wle.getKey()).amount(new BigDecimal(wle.getValue())))
+                .collect(Collectors.toList());
+        return wallets;
     }
 
     /**
