@@ -60,7 +60,7 @@ public class SmartTradeResource {
             throw new BadRequestAlertException("A new smartTrade cannot already have an ID", ENTITY_NAME, "idexists");
         }
 
-        smartTrade.setCustomer(customerResource.getCurrentCustomer());
+        smartTrade.setCustomer(customerResource.getCurrentCustomer(null));
         SmartTrade result = smartTradeRepository.save(smartTrade);
 
         return ResponseEntity
@@ -199,7 +199,7 @@ public class SmartTradeResource {
         } else {
             trades = smartTradeRepository.findAll();
         }
-        String currentCustomerLegals = customerResource.getCurrentCustomer().getCustomerLegalEntity();
+        String currentCustomerLegals = customerResource.getCurrentCustomer(null).getCustomerLegalEntity();
         return trades
             .stream()
             .filter(trade -> trade.getTradingParty().equals(currentCustomerLegals) || trade.getCounterParty().equals(currentCustomerLegals))

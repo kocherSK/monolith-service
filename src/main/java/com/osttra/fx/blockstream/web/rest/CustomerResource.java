@@ -220,9 +220,9 @@ public class CustomerResource {
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, false, ENTITY_NAME, id)).build();
     }
 
-    public Customer getCurrentCustomer() {
+    public Customer getCurrentCustomer(String userId) {
         Optional<User> currentUser = userService.getUserWithAuthorities();
-        String loggedInUser = currentUser.get().getLogin();
+        String loggedInUser = Objects.isNull(userId) ? currentUser.get().getLogin() : userId;
         List<Customer> customers = customerRepository
             .findAll()
             .stream()

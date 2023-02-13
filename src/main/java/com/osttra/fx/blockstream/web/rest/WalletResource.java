@@ -63,13 +63,13 @@ public class WalletResource {
         if (wallet.getId() != null) {
             throw new BadRequestAlertException("A new wallet cannot already have an ID", ENTITY_NAME, "idexists");
         }
-//        wallet.setCustomer(customerResource.getCurrentCustomer());
+        wallet.setCustomer(customerResource.getCurrentCustomer(loginId));
         Wallet result = walletRepository.save(wallet);
 
         return ResponseEntity
             .created(new URI("/api/wallets/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, false, ENTITY_NAME, result.getId()))
-            .body(getWallet(wallet.getCustomer().getCustomerLegalEntity()));
+            .body(getWallet(loginId));
     }
 
     /**
@@ -89,7 +89,7 @@ public class WalletResource {
         }
 
         if (!wallets.isEmpty()) {
-            String currentCustomerLegals = customerResource.getCurrentCustomer().getCustomerLegalEntity();
+            String currentCustomerLegals = customerResource.getCurrentCustomer(null).getCustomerLegalEntity();
             wallets = getWallets(currentCustomerLegals, wallets);
         }
         return wallets;
